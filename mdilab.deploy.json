@@ -275,6 +275,7 @@
                             "configurationFunction": "dsc.ps1\\DC",
                             "modulesUrl": "[variables('dscUrl')]",
                             "properties": {
+                                "DomainName": "[parameters('domainName')]",
                                 "DomainCreds": {
                                     "UserName": "[concat(parameters('domainName'), '\\', parameters('vmAdminUserName'))]",
                                     "Password": "PrivateSettingsRef:DomainPassword"
