@@ -13,7 +13,7 @@
             "type": "string",
             "defaultValue": "10.0.24.0/24",
             "metadata": {
-                "description": "Optional. The source CIDR to enable RDP from."
+                "description": "Optional. The virtual network CIDR address space."
             }
         },
         "sourceAddressPrefix": {
@@ -80,6 +80,7 @@
 
         "privateIpArray": "[split(split(parameters('vnetAddressPrefix'), '/')[0], '.')]",
         "privateIpFormat": "[format('{0}.{1}.{2}', variables('privateIpArray')[0], variables('privateIpArray')[1], variables('privateIpArray')[2])]",
+        "dcPrivateIp": "[format('{0}.4', variables('privateIpFormat'))]",
 
         "nsgName": "[format('{0}-nsg', parameters('prefix'))]",
         "vnetName": "[format('{0}-vnet', parameters('prefix'))]",
@@ -92,7 +93,8 @@
         "publicIpResourceId": "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIpName'))]",
         "publicIPAddress": { "id": "[variables('publicIpResourceId')]" },
 
-        "dscUrl": "[uri(deployment().properties.templateLink.uri, 'dsc/dsc.zip')]"
+        "dscUrl": "[uri(deployment().properties.templateLink.uri, 'dsc/dsc.zip')]",
+        "vnetTemplateUrl": "[uri(deployment().properties.templateLink.uri, 'nested/vnet.json')]"
 
     },
     "resources": [
@@ -186,7 +188,7 @@
                     {
                         "name": "ipconfig1",
                         "properties": {
-                            "privateIPAddress": "[format('{0}.4', variables('privateIpFormat'))]",
+                            "privateIPAddress": "[variables('dcPrivateIp')]",
                             "privateIPAllocationMethod": "Static",
                             "subnet": {
                                 "id": "[variables('subnetResourceId')]"
@@ -334,6 +336,42 @@
             }
         },
 
+        // Update vnet DNS
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2021-01-01",
+            "name": "UpdateVNetDNS",
+            "dependsOn": [
+                "[resourceId('Microsoft.Compute/virtualMachines/extensions', format('{0}-{1}', parameters('prefix'), variables('dcVmName')), 'Microsoft.Powershell.DSC')]"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('vnetTemplateUrl')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "vnetName": {
+                        "value": "[variables('vnetName')]"
+                    },
+                    "subnetName": {
+                        "value": "[variables('subnetName')]"
+                    },
+                    "vnetAddressPrefix": {
+                        "value": "[parameters('vnetAddressPrefix')]"
+                    },
+                    "dnsServerAddress": {
+                        "value": [
+                            "[variables('dcPrivateIp')]"
+                        ]
+                    },
+                    "location": {
+                        "value": "[parameters('location')]"
+                    }
+                }
+            }
+        },
+
         // Virtual Machine (WSs)
         {
             "type": "Microsoft.Compute/virtualMachines",
@@ -398,10 +436,49 @@
                     }
                 }
             }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "apiVersion": "2021-07-01",
+            "copy": {
+                "name": "wsVmsDscCopy",
+                "count": 2
+            },
+            "name": "[format('{0}-{1}/Microsoft.Powershell.DSC', parameters('prefix'), variables('wsVmNames')[copyIndex('wsVmsDscCopy')])]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Compute/virtualMachines', format('{0}-{1}', parameters('prefix'), variables('wsVmNames')[copyIndex('wsVmsDscCopy')]))]",
+                "[resourceId('Microsoft.Compute/virtualMachines/extensions', format('{0}-{1}', parameters('prefix'), variables('dcVmName')), 'Microsoft.Powershell.DSC')]",
+                "[resourceId('Microsoft.Resources/deployments', 'UpdateVNetDNS')]"
+            ],
+            "properties": {
+                "publisher": "Microsoft.Powershell",
+                "type": "DSC",
+                "typeHandlerVersion": "2.83",
+                "autoUpgradeMinorVersion": true,
+                "forceUpdateTag": "[parameters('dscVersion')]",
+                "settings": {
+                    "wmfVersion": "latest",
+                    "configurationFunction": "[format('dsc.ps1\\{0}', variables('wsVmNames')[copyIndex('wsVmsDscCopy')])]",
+                    "modulesUrl": "[variables('dscUrl')]",
+                    "properties": {
+                        "DomainName": "[parameters('domainName')]",
+                        "DomainCreds": {
+                            "UserName": "[concat(parameters('domainName'), '\\', parameters('vmAdminUserName'))]",
+                            "Password": "PrivateSettingsRef:DomainPassword"
+                        }
+                    }
+                },
+                "protectedSettings": {
+                    "Items": {
+                        "DomainPassword": "[parameters('vmAdminPassword')]"
+                    }
+                }
+            }
         }
     ],
     "outputs": {
-        "IPAddress": {
+        "publicIpAddress": {
             "type": "string",
             "value": "[reference(variables('publicIpResourceId')).ipAddress]"
         }

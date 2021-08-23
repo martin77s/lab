@@ -1,0 +1,74 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "vnetName": {
+            "type": "string",
+            "metadata": {
+                "description": "The virtual network name."
+            }
+        },
+        "subnetName": {
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "The subnet name."
+            }
+        },
+        "vnetAddressPrefix": {
+            "type": "string",
+            "metadata": {
+                "description": "The virtual network CIDR address space."
+            }
+        },
+        "dnsServerAddress": {
+            "type": "array",
+            "metadata": {
+                "description": "The DNS address(es) of the DNS Server(s) used by the VNET"
+            }
+        },
+        "location": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]",
+            "metadata": {
+                "description": "Optional. The location to deploy the resources."
+            }
+        }
+    },
+    "variables": {
+        //"vnetName": "[format('{0}-vnet', parameters('prefix'))]",
+        //"subnetName": "[format('{0}-subnet', parameters('prefix'))]",
+        //"nsgName": "[format('{0}-nsg', parameters('prefix'))]",
+        //"nsgResourceId": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2021-03-01",
+            "name": "[parameters('vnetName')]",
+            "location": "[parameters('location')]",
+            "properties": {
+                "dhcpOptions": {
+                    "dnsServers": "[parameters('dnsServerAddress')]"
+                },
+                "addressSpace": {
+                    "addressPrefixes": [ "[parameters('vnetAddressPrefix')]" ]
+                }
+                // ,
+                // "subnets": [
+                //     {
+                //         "name": "[variables('subnetName')]",
+                //         "properties": {
+                //             "addressPrefix": "[parameters('vnetAddressPrefix')]",
+                //             "networkSecurityGroup": {
+                //                 "id": "[variables('nsgResourceId')]"
+                //             },
+                //             "privateEndpointNetworkPolicies": "Enabled",
+                //             "privateLinkServiceNetworkPolicies": "Enabled"
+                //         }
+                //     }
+                // ]
+            }
+        }
+    ]
+}
