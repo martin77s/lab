@@ -8,10 +8,10 @@ Configuration DC {
     )
 
     Import-DscResource -ModuleName PSDesiredStateConfiguration
-    Import-DscResource -ModuleName xActiveDirectory
-    Import-DscResource -ModuleName xPendingReboot
+    Import-DscResource -ModuleName ActiveDirectoryDsc
     Import-DscResource -ModuleName StorageDsc
     Import-DscResource -ModuleName NetworkingDsc
+    Import-DscResource -ModuleName xPendingReboot
     Import-DscResource -ModuleName xPSDesiredStateConfiguration
 
     node localhost {
@@ -53,15 +53,15 @@ Configuration DC {
             DestinationPath = 'C:\MDILab'
         }
 
-        xADDomain CreateForest {
+        ADDomain CreateForest {
             DomainName                    = $DomainName
-            DomainAdministratorCredential = $DomainCreds
+            Credential                    = $DomainCreds
             SafemodeAdministratorPassword = $DomainCreds
             DatabasePath                  = 'C:\ADDS\NTDS'
             LogPath                       = 'C:\ADDS\NTDS'
             SysvolPath                    = 'C:\ADDS\Sysvol'
-            ForestMode                    = 'Win2008R2'
-            DomainMode                    = 'Win2008R2'
+            ForestMode                    = 'Win2012R2'
+            DomainMode                    = 'Win2012R2'
             DependsOn                     = '[WindowsFeature]AD-Domain-Services', '[File]ADDSFolder'
         }
 
@@ -118,6 +118,8 @@ Configuration VictimPC {
 
     Import-DscResource -ModuleName PSDesiredStateConfiguration
     Import-DscResource -ModuleName ComputerManagementDsc
+    Import-DscResource -ModuleName ActiveDirectoryDsc
+    Import-DscResource -ModuleName xPSDesiredStateConfiguration
 
     $ComputerName = $env:ComputerName
     $DomainName = Split-Path $DomainCreds.UserName
@@ -148,10 +150,9 @@ Configuration VictimPC {
                 }
             } )
 
-        xWaitForADDomain WaitForDomain {
-            DomainName       = $DomainName
-            RetryCount       = 60
-            RetryIntervalSec = 15
+        WaitForADDomain WaitForDomain {
+            DomainName  = $DomainName
+            WaitTimeout = 60
         }
 
         Computer DomainJoin {
@@ -205,6 +206,8 @@ Configuration AdminPC {
 
     Import-DscResource -ModuleName PSDesiredStateConfiguration
     Import-DscResource -ModuleName ComputerManagementDsc
+    Import-DscResource -ModuleName ActiveDirectoryDsc
+    Import-DscResource -ModuleName xPSDesiredStateConfiguration
 
     $ComputerName = $env:ComputerName
     $DomainName = Split-Path $DomainCreds.UserName
@@ -235,10 +238,9 @@ Configuration AdminPC {
                 }
             } )
 
-        xWaitForADDomain WaitForDomain {
-            DomainName       = $DomainName
-            RetryCount       = 60
-            RetryIntervalSec = 15
+        WaitForADDomain WaitForDomain {
+            DomainName  = $DomainName
+            WaitTimeout = 60
         }
 
         Computer DomainJoin {
