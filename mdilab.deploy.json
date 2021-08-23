@@ -360,6 +360,9 @@
                     "vnetAddressPrefix": {
                         "value": "[parameters('vnetAddressPrefix')]"
                     },
+                    "nsgResourceId": {
+                        "value": "[variables('nsgResourceId')]"
+                    },
                     "dnsServerAddress": {
                         "value": [
                             "[variables('dcPrivateIp')]"
@@ -437,6 +440,8 @@
                 }
             }
         },
+
+        // Virtual Machines DSC Extension
         {
             "type": "Microsoft.Compute/virtualMachines/extensions",
             "apiVersion": "2021-07-01",

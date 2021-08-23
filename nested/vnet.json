@@ -21,6 +21,12 @@
                 "description": "The virtual network CIDR address space."
             }
         },
+        "nsgResourceId": {
+            "type": "string",
+            "metadata": {
+                "description": "The resourceId for the network security group to attach to the subnet."
+            }
+        },
         "dnsServerAddress": {
             "type": "array",
             "metadata": {
@@ -35,12 +41,6 @@
             }
         }
     },
-    "variables": {
-        //"vnetName": "[format('{0}-vnet', parameters('prefix'))]",
-        //"subnetName": "[format('{0}-subnet', parameters('prefix'))]",
-        //"nsgName": "[format('{0}-nsg', parameters('prefix'))]",
-        //"nsgResourceId": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]"
-    },
     "resources": [
         {
             "type": "Microsoft.Network/virtualNetworks",
@@ -54,20 +54,20 @@
                 "addressSpace": {
                     "addressPrefixes": [ "[parameters('vnetAddressPrefix')]" ]
                 }
-                // ,
-                // "subnets": [
-                //     {
-                //         "name": "[variables('subnetName')]",
-                //         "properties": {
-                //             "addressPrefix": "[parameters('vnetAddressPrefix')]",
-                //             "networkSecurityGroup": {
-                //                 "id": "[variables('nsgResourceId')]"
-                //             },
-                //             "privateEndpointNetworkPolicies": "Enabled",
-                //             "privateLinkServiceNetworkPolicies": "Enabled"
-                //         }
-                //     }
-                // ]
+                ,
+                "subnets": [
+                    {
+                        "name": "[parameters('subnetName')]",
+                        "properties": {
+                            "addressPrefix": "[parameters('vnetAddressPrefix')]",
+                            "networkSecurityGroup": {
+                                "id": "[parameters('nsgResourceId')]"
+                            },
+                            "privateEndpointNetworkPolicies": "Enabled",
+                            "privateLinkServiceNetworkPolicies": "Enabled"
+                        }
+                    }
+                ]
             }
         }
     ]
