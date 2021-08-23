@@ -137,19 +137,6 @@ Configuration VictimPC {
             ActionAfterReboot    = 'ContinueConfiguration'
         }
 
-        $Features = @(
-            'RSAT-AD-PowerShell',
-            'Telnet-Client'
-        )
-
-        $Features.ForEach( {
-                Write-Verbose "`t - $_" -Verbose
-                WindowsFeature "$_" {
-                    Ensure = 'Present'
-                    Name   = $_
-                }
-            } )
-
         WaitForADDomain WaitForDomain {
             DomainName  = $DomainName
             WaitTimeout = 60
@@ -224,19 +211,6 @@ Configuration AdminPC {
             AllowModuleOverwrite = $true
             ActionAfterReboot    = 'ContinueConfiguration'
         }
-
-        $Features = @(
-            'RSAT-AD-PowerShell',
-            'Telnet-Client'
-        )
-
-        $Features.ForEach( {
-                Write-Verbose "`t - $_" -Verbose
-                WindowsFeature "$_" {
-                    Ensure = 'Present'
-                    Name   = $_
-                }
-            } )
 
         WaitForADDomain WaitForDomain {
             DomainName  = $DomainName
