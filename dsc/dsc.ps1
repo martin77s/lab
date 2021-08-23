@@ -100,7 +100,7 @@ Configuration DC {
                 # Create new AD user Defender for Identity Service
                 New-ADUser -Name AatpService -DisplayName "Azure ATP/ATA Service" -PasswordNeverExpires $true -AccountPassword $AATPService -Enabled $true
             }
-            DependsOn  = '[xADDomain]CreateForest', '[File]MdiLabFolder'
+            DependsOn  = '[ADDomain]CreateForest', '[File]MdiLabFolder'
         }
     }
 }
@@ -159,7 +159,7 @@ Configuration VictimPC {
             Name       = $ComputerName
             DomainName = $DomainName
             Credential = $DomainCreds
-            DependsOn  = '[xWaitForADDomain]WaitForDomain'
+            DependsOn  = '[WaitForADDomain]WaitForDomain'
         }
 
         File MdiLabFolder {
@@ -247,7 +247,7 @@ Configuration AdminPC {
             Name       = $ComputerName
             DomainName = $DomainName
             Credential = $DomainCreds
-            DependsOn  = '[xWaitForADDomain]WaitForDomain'
+            DependsOn  = '[WaitForADDomain]WaitForDomain'
         }
 
         File MdiLabFolder {
