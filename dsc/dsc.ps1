@@ -14,6 +14,8 @@ Configuration DC {
     Import-DscResource -ModuleName xPendingReboot
     Import-DscResource -ModuleName xPSDesiredStateConfiguration
 
+    Set-Item -Path WSMan:\localhost\Client\TrustedHosts -Value * -Force
+
     node localhost {
 
         LocalConfigurationManager {
@@ -101,7 +103,6 @@ Configuration DC {
                 New-ADUser -Name AatpService -DisplayName "Azure ATP/ATA Service" -PasswordNeverExpires $true -AccountPassword $AATPService -Enabled $true
             }
             DependsOn  = '[ADDomain]CreateForest', '[File]MdiLabFolder'
-            Credential = $DomainCreds
             PsDscRunAsCredential = $DomainCreds
         }
     }
