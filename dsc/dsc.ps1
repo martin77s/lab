@@ -11,8 +11,7 @@ Configuration DC {
     Import-DscResource -ModuleName ActiveDirectoryDsc
     Import-DscResource -ModuleName StorageDsc
     Import-DscResource -ModuleName NetworkingDsc
-    Import-DscResource -ModuleName xPendingReboot
-    Import-DscResource -ModuleName xPSDesiredStateConfiguration
+    Import-DscResource -ModuleName ComputerManagementDsc
 
     Set-Item -Path WSMan:\localhost\Client\TrustedHosts -Value * -Force
 
@@ -122,7 +121,6 @@ Configuration DC {
 }
 
 
-
 Configuration VictimPC {
 
     [CmdletBinding()]
@@ -135,7 +133,6 @@ Configuration VictimPC {
     Import-DscResource -ModuleName PSDesiredStateConfiguration
     Import-DscResource -ModuleName ComputerManagementDsc
     Import-DscResource -ModuleName ActiveDirectoryDsc
-    Import-DscResource -ModuleName xPSDesiredStateConfiguration
 
     $ComputerName = $env:ComputerName
     $DomainName = Split-Path $DomainCreds.UserName
@@ -197,7 +194,6 @@ Configuration VictimPC {
 }
 
 
-
 Configuration AdminPC {
 
     [CmdletBinding()]
@@ -210,7 +206,6 @@ Configuration AdminPC {
     Import-DscResource -ModuleName PSDesiredStateConfiguration
     Import-DscResource -ModuleName ComputerManagementDsc
     Import-DscResource -ModuleName ActiveDirectoryDsc
-    Import-DscResource -ModuleName xPSDesiredStateConfiguration
 
     $ComputerName = $env:ComputerName
     $DomainName = Split-Path $DomainCreds.UserName
@@ -267,6 +262,5 @@ Configuration AdminPC {
             }
             DependsOn  = '[Computer]DomainJoin', '[File]MdiLabFolder'
         }
-
     }
 }
