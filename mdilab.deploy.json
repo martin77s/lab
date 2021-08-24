@@ -264,42 +264,42 @@
                         "enabled": true
                     }
                 }
-            },
-            "resources": [
-                {
-                    "type": "Microsoft.Compute/virtualMachines/extensions",
-                    "apiVersion": "2021-07-01",
-                    "name": "[format('{0}-{1}/Microsoft.Powershell.DSC', parameters('prefix'), variables('dcVmName'))]",
-                    "location": "[resourceGroup().location]",
-                    "dependsOn": [
-                        "[resourceId('Microsoft.Compute/virtualMachines', format('{0}-{1}', parameters('prefix'), variables('dcVmName')))]"
-                    ],
+            }
+        },
+
+        // DSC Extension for the DC
+        {
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "apiVersion": "2021-07-01",
+            "name": "[format('{0}-{1}/Microsoft.Powershell.DSC', parameters('prefix'), variables('dcVmName'))]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Compute/virtualMachines', format('{0}-{1}', parameters('prefix'), variables('dcVmName')))]"
+            ],
+            "properties": {
+                "publisher": "Microsoft.Powershell",
+                "type": "DSC",
+                "typeHandlerVersion": "2.83",
+                "autoUpgradeMinorVersion": true,
+                "forceUpdateTag": "[parameters('dscVersion')]",
+                "settings": {
+                    "wmfVersion": "latest",
+                    "configurationFunction": "dsc.ps1\\DC",
+                    "modulesUrl": "[variables('dscUrl')]",
                     "properties": {
-                        "publisher": "Microsoft.Powershell",
-                        "type": "DSC",
-                        "typeHandlerVersion": "2.83",
-                        "autoUpgradeMinorVersion": true,
-                        "forceUpdateTag": "[parameters('dscVersion')]",
-                        "settings": {
-                            "wmfVersion": "latest",
-                            "configurationFunction": "dsc.ps1\\DC",
-                            "modulesUrl": "[variables('dscUrl')]",
-                            "properties": {
-                                "DomainName": "[parameters('domainName')]",
-                                "DomainCreds": {
-                                    "UserName": "[concat(parameters('domainName'), '\\', parameters('vmAdminUserName'))]",
-                                    "Password": "PrivateSettingsRef:DomainPassword"
-                                }
-                            }
-                        },
-                        "protectedSettings": {
-                            "Items": {
-                                "DomainPassword": "[parameters('vmAdminPassword')]"
-                            }
+                        "DomainName": "[parameters('domainName')]",
+                        "DomainCreds": {
+                            "UserName": "[concat(parameters('domainName'), '\\', parameters('vmAdminUserName'))]",
+                            "Password": "PrivateSettingsRef:DomainPassword"
                         }
                     }
+                },
+                "protectedSettings": {
+                    "Items": {
+                        "DomainPassword": "[parameters('vmAdminPassword')]"
+                    }
                 }
-            ]
+            }
         },
 
         // NIC (WSs)
@@ -441,7 +441,7 @@
             }
         },
 
-        // Virtual Machines DSC Extension
+        // DSC Extension for the WSs
         {
             "type": "Microsoft.Compute/virtualMachines/extensions",
             "apiVersion": "2021-07-01",
