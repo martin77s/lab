@@ -29,6 +29,7 @@ Configuration DC {
             'RSAT-ADDS',
             'RSAT-AD-Tools',
             'RSAT-AD-PowerShell',
+            'RSAT-AD-AdminCenter',
             'RSAT-Role-Tools',
             'RSAT-DNS-Server',
             'GPMC',
@@ -42,6 +43,13 @@ Configuration DC {
                     Name   = $_
                 }
             } )
+
+        DnsServerAddress DnsServerAddress {
+            AddressFamily  = 'IPv4'
+            Address        = '127.0.0.1'
+            InterfaceAlias = (Get-NetAdapter | Where-Object { $_.Name -like 'Ethernet*' } | Select-Object -First 1).Name
+            DependsOn      = '[WindowsFeature]DNS'
+        }
 
         File ADDSFolder {
             Ensure          = 'Present'
@@ -67,7 +75,12 @@ Configuration DC {
             DependsOn                     = '[WindowsFeature]AD-Domain-Services', '[File]ADDSFolder'
         }
 
-        script CreateADUsers {
+        PendingReboot RebootAfterPromotion {
+            Name = 'RebootAfterDCPromotion'
+            DependsOn = '[ADDomain]CreateForest'
+        }
+
+        Script CreateADUsers {
 
             TestScript = {
                 Test-Path -Path 'C:\MDILab\postDeploy.flag'
