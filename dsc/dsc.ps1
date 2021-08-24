@@ -101,7 +101,7 @@ Configuration DC {
                 New-ADUser -Name AatpService -DisplayName "Azure ATP/ATA Service" -PasswordNeverExpires $true -AccountPassword $AATPService -Enabled $true
             }
             DependsOn  = '[ADDomain]CreateForest', '[File]MdiLabFolder'
-            Credential = $DomainCreds
+            PsDscRunAsCredential = $DomainCreds
         }
     }
 }

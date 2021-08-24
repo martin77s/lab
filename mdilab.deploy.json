@@ -25,14 +25,14 @@
         },
         "dcVmSize": {
             "type": "string",
-            "defaultValue": "Standard_D4s_v3",
+            "defaultValue": "Standard_DS3_v2",
             "metadata": {
                 "description": "The VM size for the Domain Controller"
             }
         },
         "wsVmSize": {
             "type": "string",
-            "defaultValue": "Standard_D4s_v3",
+            "defaultValue": "Standard_DS3_v2",
             "metadata": {
                 "description": "The VMsize for the Workstations"
             }
